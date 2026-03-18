@@ -20,9 +20,10 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     VL_IN8(clk,0,0);
     VL_IN8(reset,0,0);
     CData/*2:0*/ top__DOT__imm_type;
+    CData/*0:0*/ top__DOT__u_idu__DOT__rs2_en;
     CData/*0:0*/ top__DOT__u_idu__DOT__npc_sel;
+    CData/*0:0*/ top__DOT__u_idu__DOT____VdfgRegularize_h52656aab_0_1;
     CData/*0:0*/ top__DOT__u_regfile__DOT____Vstrobe0;
-    CData/*0:0*/ top__DOT__u_exu__DOT__alu_src2_imm;
     CData/*2:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_wb_sel;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
@@ -40,6 +41,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__Vfuncout;
     IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_pc4;
     IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_alu_result;
+    IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_imm;
     IData/*31:0*/ __VactIterCount;
     VlUnpacked<IData/*31:0*/, 32> top__DOT__u_regfile__DOT__rf;
     VlUnpacked<QData/*63:0*/, 1> __VstlTriggered;

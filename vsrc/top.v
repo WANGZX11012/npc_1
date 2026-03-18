@@ -15,6 +15,7 @@ module top(
   wire [2:0] imm_type;
   wire [3:0] alu_op;
   wire       alu_src2_imm;
+  wire       alu_en;
 
   wire [2:0] wb_sel;
   wire       npc_sel;    //是1就是jal触发
@@ -68,6 +69,7 @@ module top(
  ,.imm_type      (imm_type)
  ,.alu_op        (alu_op)
  ,.alu_src2_imm  (alu_src2_imm)
+ ,.alu_en        (alu_en)
  ,.wb_sel        (wb_sel)
  ,.npc_sel       (npc_sel)  
  //not used ouput
@@ -112,6 +114,7 @@ module top(
  ,.imm          (imm)
  ,.alu_op       (alu_op)
  ,.alu_src2_imm (alu_src2_imm)
+ ,.alu_en       (alu_en)
 
  ,.alu_result   (alu_result)
  ,.j_target     (j_target)
@@ -139,8 +142,9 @@ module top(
  ,.pc4              (pc4)
  ,.alu_result       (alu_result)
  ,.mem_data         (32'h0)
+ ,.imm              (imm)
  ,.wb_data          (wb_data)
-
+ 
   );
 
   dpic_ebreak u_dpic(

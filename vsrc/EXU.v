@@ -7,6 +7,7 @@ module EXU(
 
   input  [31:0]         imm,
 
+  input                 alu_en,
   input  [3:0]          alu_op,
   input                 alu_src2_imm,    //alu的第二个输入是imm还是rs2_data
 
@@ -31,7 +32,7 @@ function [31:0] alu_func;
 endfunction
 
 
- assign alu_result = alu_func(alu_op, src1, src2);
+ assign alu_result = alu_en ? alu_func(alu_op, src1, src2) : 32'b0;
  assign j_target   = (rs1_data + imm) & 32'hffff_fffe;
 
 

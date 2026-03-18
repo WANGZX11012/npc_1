@@ -14,7 +14,7 @@ module IDU (
   output reg  [2:0]         imm_type,
   
   output [3:0]              alu_op,
-
+  output                    alu_en,     //新增控制
   output                    alu_src2_imm, //alu的第二个输入是rs2 还是imm的判断信号
 
   output                    mem_re,
@@ -37,40 +37,45 @@ localparam IMM_J = 3'b100;
   wire [6:0] opcode = inst[6:0];
   wire [2:0] funct3 = inst[14:12];
 
+  //具体指令的判断译码
   wire is_addi = (opcode == 7'b0010011) && (funct3 == 3'b000);
   wire is_jalr = (opcode == 7'b1100111) && (funct3 == 3'b000);
+  wire is_add  = (opcode == 7'b0110011) && (funct3 == 3'b000); 
+  wire is_lui  = (opcode == 7'b0110111);
 
   assign rs1 = inst[19:15];
   assign rs2 = inst[24:20];
   assign rd  = inst[11:7];
 
-  assign rs1_en = is_addi | is_jalr;
-  assign rs2_en = 1'b0;
-  assign rd_en  = is_addi | is_jalr;
-
-  assign alu_op = 4'b0000;
-  assign alu_src2_imm = is_addi | is_jalr;
+  assign rs1_en = is_addi | is_jalr | is_add;
+  assign rs2_en = is_add;
+  assign rd_en  = is_addi | is_jalr | is_add | is_lui;
+  
+  /*alu related*/
+  assign alu_op = 4'b0000; //0是加法 现在固定
+  assign alu_src2_imm = is_addi | is_jalr | is_lui;  //add时为0， 为0时src2传入imm 而不是rs2的值 
+  assign alu_en = is_add | is_addi | is_jalr;
 
     // npc_sel:
-  // 000 -> pc + 4
-  // 001 -> jalr目标地址
+  // 000 -> pc + 4  // 001 -> jalr目标地址
+  
   assign npc_sel = is_jalr ? 1 : 0;
-  // 不支持访存
+  // 访存相关
   assign mem_re = 1'b0;
   assign mem_we = 1'b0;
   assign mem_width = 2'b00;
   assign mem_unsigned = 1'b0;
 
-    // wb_sel:
+  // wb_sel:
   // 000 -> ALU结果（addi）
   // 001 -> pc + 4   （jalr）
-  assign wb_sel = is_jalr ? 3'b001 : 3'b000;
+  assign wb_sel = is_jalr ? 3'b001 : (is_lui ? 3'b011 : 3'b000);
 
     // 不支持分支
   assign branch_type = 3'b000;
 
-
-  always@(*)
+  /*opcode 判断imm 类型*/
+  always@(*) 
   begin
     case(opcode)
         7'b0010011: imm_type = IMM_I; // addi, I-type

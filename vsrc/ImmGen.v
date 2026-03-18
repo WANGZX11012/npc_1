@@ -1,3 +1,5 @@
+
+//逻辑组合 
 module ImmGen(
 
   input      [31:0]         inst,
@@ -17,7 +19,8 @@ localparam IMM_J = 3'b100;
 always@(*)
 begin
     case(imm_type)
-        IMM_I:      imm = {{20{inst[31]}},inst[31:20]};
+        IMM_I:      imm = {{20{inst[31]}},inst[31:20]}; //TYPE I 符号位扩成32位
+        IMM_U:      imm = { inst[31:12], 12'b0 };       //符号位扩展是一样的
         default:    imm = 0;
     endcase
 

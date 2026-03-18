@@ -214,14 +214,15 @@ VL_ATTR_COLD void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf) {
     vlSelf->top__DOT__imm_type = VL_SCOPED_RAND_RESET_I(3, __VscopeHash, 12497190741446287693ull);
     vlSelf->top__DOT__alu_result = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 1414706314101411564ull);
     vlSelf->top__DOT__wb_data = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 17168433359956578864ull);
+    vlSelf->top__DOT__u_idu__DOT__rs2_en = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 8631794176635491659ull);
     vlSelf->top__DOT__u_idu__DOT__npc_sel = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 9137625139758783844ull);
+    vlSelf->top__DOT__u_idu__DOT____VdfgRegularize_h52656aab_0_1 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 5412926684293355848ull);
     for (int __Vi0 = 0; __Vi0 < 32; ++__Vi0) {
         vlSelf->top__DOT__u_regfile__DOT__rf[__Vi0] = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 11822391510231489933ull);
     }
     vlSelf->top__DOT__u_regfile__DOT____Vstrobe0 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 11846692506783115410ull);
     vlSelf->top__DOT__u_exu__DOT__rs1_data = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 12143105676560872862ull);
     vlSelf->top__DOT__u_exu__DOT__imm = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 15102824458289643275ull);
-    vlSelf->top__DOT__u_exu__DOT__alu_src2_imm = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 6899797270396966172ull);
     vlSelf->top__DOT__u_pcreg__DOT__next_pc = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 9892103769701567609ull);
     vlSelf->__Vfunc_top__DOT__u_exu__DOT__alu_func__0__Vfuncout = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 6753873285063686732ull);
     vlSelf->__Vfunc_top__DOT__u_exu__DOT__alu_func__0__a = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 16299560665371169168ull);
@@ -230,6 +231,7 @@ VL_ATTR_COLD void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf) {
     vlSelf->__Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_wb_sel = VL_SCOPED_RAND_RESET_I(3, __VscopeHash, 5436382695345041697ull);
     vlSelf->__Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_pc4 = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 9273492651321852316ull);
     vlSelf->__Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_alu_result = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 7451601559142829645ull);
+    vlSelf->__Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_imm = VL_SCOPED_RAND_RESET_I(32, __VscopeHash, 16965588805458571731ull);
     for (int __Vi0 = 0; __Vi0 < 1; ++__Vi0) {
         vlSelf->__VstlTriggered[__Vi0] = 0;
     }
