@@ -6,19 +6,24 @@
 #define VERILATED_VTOP___024ROOT_H_  // guard
 
 #include "verilated.h"
+class Vtop___024unit;
 
 
 class Vtop__Syms;
 
 class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule {
   public:
+    // CELLS
+    Vtop___024unit* __PVT____024unit;
 
     // DESIGN SPECIFIC STATE
     VL_IN8(clk,0,0);
     VL_IN8(reset,0,0);
     CData/*2:0*/ top__DOT__imm_type;
     CData/*0:0*/ top__DOT__u_idu__DOT__npc_sel;
+    CData/*0:0*/ top__DOT__u_regfile__DOT____Vstrobe0;
     CData/*0:0*/ top__DOT__u_exu__DOT__alu_src2_imm;
+    CData/*2:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_wb_sel;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
     CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
@@ -29,6 +34,12 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     IData/*31:0*/ top__DOT__u_exu__DOT__rs1_data;
     IData/*31:0*/ top__DOT__u_exu__DOT__imm;
     IData/*31:0*/ top__DOT__u_pcreg__DOT__next_pc;
+    IData/*31:0*/ __Vfunc_top__DOT__u_exu__DOT__alu_func__0__Vfuncout;
+    IData/*31:0*/ __Vfunc_top__DOT__u_exu__DOT__alu_func__0__a;
+    IData/*31:0*/ __Vfunc_top__DOT__u_exu__DOT__alu_func__0__b;
+    IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__Vfuncout;
+    IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_pc4;
+    IData/*31:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_alu_result;
     IData/*31:0*/ __VactIterCount;
     VlUnpacked<IData/*31:0*/, 32> top__DOT__u_regfile__DOT__rf;
     VlUnpacked<QData/*63:0*/, 1> __VstlTriggered;

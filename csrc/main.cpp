@@ -1,8 +1,10 @@
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include "Vtop.h"
 #include "verilated.h"
-#include "verilated_vcd_c.h"
+#include "verilated_vcd_c.h" //引入 Verilator 的 VCD 波形接口声明。
+// 没它就不能用 VerilatedVcdC，也不能写 wave.vcd 给 GTKWave 看。
 
 // 最小程序内存：按32位字存放指令
 static uint32_t pmem[256] = {
@@ -16,7 +18,16 @@ static uint32_t pmem[256] = {
 
 static inline uint32_t pmem_read(uint32_t addr) {
   // 指令按4字节对齐读取
-  return pmem[(addr & ~0x3u) >> 2];
+  return pmem[(addr & ~0x3u) >> 2];  //低两位清零后右移
+}
+
+// DPI-C: ebreak handler called from SystemVerilog via
+// import "DPI-C" function void npc_ebreak(input int code);
+extern "C" void npc_ebreak(int code) {
+  printf("DPI-C: ebreak at PC=0x%08x\n", code);
+  fflush(stdout);
+  // terminate the simulation immediately
+  exit(0);
 }
 
 int main(int argc, char** argv) {
@@ -30,8 +41,8 @@ int main(int argc, char** argv) {
 
   Vtop *top = new Vtop;
 
-  top->trace(tfp, 0);
-  tfp->open("obj_dir/wave.vcd");
+  top->trace(tfp, 0); //把你的 DUT（top）和波形对象 tfp 绑定。
+  tfp->open("obj_dir/wave.vcd"); //创建vcd
   vluint64_t sim_time = 0;
 
   // reset

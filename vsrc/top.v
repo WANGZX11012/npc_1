@@ -143,7 +143,13 @@ module top(
 
   );
 
+  dpic_ebreak u_dpic(
 
+  .clk          (clk)
+ ,.inst         (inst_out)
+ ,.pc           (pc)
+
+  );
 
 
 
