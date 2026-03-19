@@ -20,7 +20,7 @@ wire [31:0] src1 = rs1_data;
 wire [31:0] src2 = alu_src2_imm ? imm : rs2_data;
 
 function [31:0] alu_func;
-    input [3:0] op;
+    input [3:0]     op;
     input [31:0]    a;
     input [31:0]    b;
     begin

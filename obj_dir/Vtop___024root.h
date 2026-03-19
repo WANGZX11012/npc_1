@@ -19,10 +19,12 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     // DESIGN SPECIFIC STATE
     VL_IN8(clk,0,0);
     VL_IN8(reset,0,0);
-    CData/*2:0*/ top__DOT__imm_type;
     CData/*0:0*/ top__DOT__u_idu__DOT__rs2_en;
     CData/*0:0*/ top__DOT__u_idu__DOT__npc_sel;
-    CData/*0:0*/ top__DOT__u_idu__DOT____VdfgRegularize_h52656aab_0_1;
+    CData/*2:0*/ top__DOT__u_idu__DOT__imm_type;
+    CData/*0:0*/ top__DOT__u_idu__DOT__is_sb;
+    CData/*0:0*/ top__DOT__u_idu__DOT__is_sw;
+    CData/*0:0*/ top__DOT__u_idu__DOT____VdfgRegularize_h52656aab_0_2;
     CData/*0:0*/ top__DOT__u_regfile__DOT____Vstrobe0;
     CData/*2:0*/ __Vfunc_top__DOT__u_wbu__DOT__wb_func__1__i_wb_sel;
     CData/*0:0*/ __VstlFirstIteration;
@@ -32,6 +34,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     VL_OUT(pc,31,0);
     IData/*31:0*/ top__DOT__alu_result;
     IData/*31:0*/ top__DOT__wb_data;
+    IData/*31:0*/ top__DOT__rdata;
     IData/*31:0*/ top__DOT__u_exu__DOT__rs1_data;
     IData/*31:0*/ top__DOT__u_exu__DOT__imm;
     IData/*31:0*/ top__DOT__u_pcreg__DOT__next_pc;

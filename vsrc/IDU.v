@@ -11,7 +11,7 @@ module IDU (
   output                    rs2_en,
   output                    rd_en,
 
-  output reg  [2:0]         imm_type,
+  output [31:0]             imm,
   
   output [3:0]              alu_op,
   output                    alu_en,     //新增控制
@@ -36,25 +36,31 @@ localparam IMM_J = 3'b100;
 
   wire [6:0] opcode = inst[6:0];
   wire [2:0] funct3 = inst[14:12];
+  reg [2:0] imm_type;
 
   //具体指令的判断译码
   wire is_addi = (opcode == 7'b0010011) && (funct3 == 3'b000);
   wire is_jalr = (opcode == 7'b1100111) && (funct3 == 3'b000);
   wire is_add  = (opcode == 7'b0110011) && (funct3 == 3'b000); 
   wire is_lui  = (opcode == 7'b0110111);
+  wire is_sb   = (opcode == 7'b0100011) && (funct3 == 3'b000);
+  wire is_sw   = (opcode == 7'b0100011) && (funct3 == 3'b010);
 
+
+  
   assign rs1 = inst[19:15];
   assign rs2 = inst[24:20];
   assign rd  = inst[11:7];
 
+  /*暂时与sb sw无关*/
   assign rs1_en = is_addi | is_jalr | is_add;
   assign rs2_en = is_add;
   assign rd_en  = is_addi | is_jalr | is_add | is_lui;
   
   /*alu related*/
   assign alu_op = 4'b0000; //0是加法 现在固定
-  assign alu_src2_imm = is_addi | is_jalr | is_lui;  //add时为0， 为0时src2传入imm 而不是rs2的值 
-  assign alu_en = is_add | is_addi | is_jalr;
+  assign alu_src2_imm = is_addi | is_jalr | is_lui | is_sw | is_sb;  //add时为0， 为1时src2传入imm 而不是rs2的值 
+  assign alu_en = is_add | is_addi | is_jalr | is_sb | is_sw;
 
     // npc_sel:
   // 000 -> pc + 4  // 001 -> jalr目标地址
@@ -62,8 +68,8 @@ localparam IMM_J = 3'b100;
   assign npc_sel = is_jalr ? 1 : 0;
   // 访存相关
   assign mem_re = 1'b0;
-  assign mem_we = 1'b0;
-  assign mem_width = 2'b00;
+  assign mem_we = is_sb | is_sw;
+  assign mem_width = is_sb ? 2'b00 : (is_sw ? 2'b10 : 2'b01);//0代表1字节 1代表二字节 2代表四字节
   assign mem_unsigned = 1'b0;
 
   // wb_sel:
@@ -89,7 +95,19 @@ localparam IMM_J = 3'b100;
     endcase
   end
 
+  /*立即数生成逻辑 (集成从ImmGen)*/
+  wire [31:0] imm_i = {{20{inst[31]}}, inst[31:20]};
+  wire [31:0] imm_s = {{20{inst[31]}}, inst[31:25], inst[11:7]}; //没毛
+  wire [31:0] imm_u = {inst[31:12], 12'b0};
+  wire [31:0] imm_b = {{20{inst[31]}}, inst[31:25], inst[11:8], 1'b0};
+  wire [31:0] imm_j = {{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
 
+  assign imm = (imm_type == IMM_I) ? imm_i :
+               (imm_type == IMM_S) ? imm_s :
+               (imm_type == IMM_U) ? imm_u :
+               (imm_type == IMM_B) ? imm_b :
+               (imm_type == IMM_J) ? imm_j :
+               32'h0;
 
 endmodule
 

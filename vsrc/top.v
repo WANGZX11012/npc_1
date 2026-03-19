@@ -12,7 +12,7 @@ module top(
   //IDU
   wire [4:0] rs1, rs2, rd;
   wire       rs1_en, rs2_en, rd_en;  //rd_en is we sig
-  wire [2:0] imm_type;
+  wire [31:0] imm;
   wire [3:0] alu_op;
   wire       alu_src2_imm;
   wire       alu_en;
@@ -32,10 +32,6 @@ module top(
   //reg file
 
   wire [31:0] r_data1, r_data2;
-
-  //immgen 根据不同指令type 选择输出的立即数
-  
-  wire [31:0] imm;
 
 
   //EXU
@@ -66,7 +62,7 @@ module top(
  ,.rs1_en        (rs1_en)
  ,.rs2_en        (rs2_en)
  ,.rd_en         (rd_en)
- ,.imm_type      (imm_type)
+ ,.imm           (imm)
  ,.alu_op        (alu_op)
  ,.alu_src2_imm  (alu_src2_imm)
  ,.alu_en        (alu_en)
@@ -78,7 +74,6 @@ module top(
  ,.mem_width     (mem_width)
  ,.mem_unsigned  (mem_unsigned)
  ,.branch_type   (branch_type)
-
 
   );
 
@@ -96,14 +91,6 @@ module top(
  ,.r_data1      (r_data1)
  ,.r_data2      (r_data2)
 
-
-  );
-
-  ImmGen u_immgen(
-
-  .inst         (inst_out)
- ,.imm_type     (imm_type)
- ,.imm          (imm)
 
   );
 
@@ -146,6 +133,23 @@ module top(
  ,.wb_data          (wb_data)
  
   );
+
+
+wire [31:0] rdata; //临时用作LSU的读出值
+
+  LSU u_lsu(
+
+  .clk          (clk)
+ ,.mem_re       (mem_re)
+ ,.mem_we       (mem_we)
+ ,.mem_width    (mem_width)
+ ,.mem_unsigned (mem_unsigned)
+ ,.wdata        (r_data2)
+ ,.addr         (alu_result)
+ ,.rdata        (rdata)
+
+  );
+
 
   dpic_ebreak u_dpic(
 
