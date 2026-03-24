@@ -10,17 +10,18 @@ static size_t pmem_words_size = 0;
 static uint32_t dynamic_pc_inst[MAX_WORDS];
 static size_t dynamic_pc_inst_size = 0;
 
-static const uint32_t default_pc_inst[] = {
-  0x000010b7,
-  0x02008093,
-  0x00500113,
-  0x002081b3,
-  0x00302023,
-  0x00002203,
-  0x00200223,
-  0x00404283,
-  0x024003e7,
-  0x00c00067,
+static const uint32_t default_pc_inst[] = 
+{
+  0x000010b7, // PC=0x00000000: lui  x1,0x1      ; x1 = 0x1 << 12 = 0x1000
+  0x02008093, // PC=0x00000004: addi x1,x1,32   ; x1 = x1 + 32 = 0x1020
+  0x00500113, // PC=0x00000008: addi x2,x0,5    ; x2 = 5
+  0x002081b3, // PC=0x0000000c: add  x3,x1,x2   ; x3 = x1 + x2
+  0x00302023, // PC=0x00000010: sw   x3,0(x0)   ; store x3 -> mem[0]
+  0x00002203, // PC=0x00000014: lw   x4,0(x0)   ; load mem[0] -> x4
+  0x00200223, // PC=0x00000018: sb   x2,4(x0)   ; store byte (x2&0xff) -> mem[4]
+  0x00404283, // PC=0x0000001c: lw   x5,4(x0)   ; load from mem[4] -> x5 (low byte=5)
+  0x024003e7, // PC=0x00000020: jalr x7,x0,0x24 ; x7 = pc+4, jump to 0x24
+  0x00c00067, // PC=0x00000024: jalr x0,x0,0xc  ; jump to 0x0c (form loop)  EBREAK
 };
 
 bool load_hex_program(const char *path) 

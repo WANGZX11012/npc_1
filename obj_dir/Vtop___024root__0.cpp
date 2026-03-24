@@ -333,7 +333,10 @@ void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) {
     CData/*0:0*/ __VdlySet__top__DOT__u_regfile__DOT__rf__v0;
     __VdlySet__top__DOT__u_regfile__DOT__rf__v0 = 0;
     // Body
-    if ((0x00100073U == vlSelfRef.inst)) {
+    if (((((0x00100073U == vlSelfRef.inst) | (0x00c00067U 
+                                              == vlSelfRef.inst)) 
+          | (0x21820213U == vlSelfRef.inst)) | (0x22400213U 
+                                                == vlSelfRef.inst))) {
         Vtop___024unit____Vdpiimwrap_npc_ebreak_TOP____024unit(vlSelfRef.pc);
     }
     if (((IData)(vlSelfRef.top__DOT__u_idu__DOT__is_sb) 
