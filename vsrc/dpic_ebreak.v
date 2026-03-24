@@ -8,15 +8,12 @@ module dpic_ebreak(
 
   // EBREAK 
   localparam EBREAK     = 32'h00100073;
-  localparam EBREAK1    = 32'h00c00067; //default 程序的ebreak
-  localparam EBREAK2    = 32'h21820213; //mem hex halt
-  localparam EBREAK3    = 32'h22400213; //sum hex halt
 
 
 
   always @(posedge clk) 
   begin
-    if (inst == EBREAK || inst == EBREAK1 || inst == EBREAK2 || inst == EBREAK3) begin
+    if (inst == EBREAK) begin
       // pass PC as code/context to the DPI-C handler
       npc_ebreak(pc);
     end

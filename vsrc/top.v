@@ -18,7 +18,8 @@ module top(
   wire       alu_en;
 
   wire [2:0] wb_sel;
-  wire       npc_sel;    //是1就是jal触发
+  wire       npc_sel;    //是1就是jalr触发
+  wire       jal;        // jal 指令
 
   
   wire       mem_re;
@@ -73,7 +74,8 @@ module top(
  ,.alu_src2_imm  (alu_src2_imm)
  ,.alu_en        (alu_en)
  ,.wb_sel        (wb_sel)
- ,.npc_sel       (npc_sel)  
+ ,.npc_sel       (npc_sel)
+ ,.jal           (jal)
  //not used ouput
  ,.mem_re        (mem_re)
  ,.mem_we        (mem_we)

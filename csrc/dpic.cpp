@@ -21,6 +21,7 @@ static const uint32_t default_pc_inst[] =
   0x00200223, // PC=0x00000018: sb   x2,4(x0)   ; store byte (x2&0xff) -> mem[4]
   0x00404283, // PC=0x0000001c: lw   x5,4(x0)   ; load from mem[4] -> x5 (low byte=5)
   0x024003e7, // PC=0x00000020: jalr x7,x0,0x24 ; x7 = pc+4, jump to 0x24
+  0x00100073,   //EBREAK
   0x00c00067, // PC=0x00000024: jalr x0,x0,0xc  ; jump to 0x0c (form loop)  EBREAK
 };
 
