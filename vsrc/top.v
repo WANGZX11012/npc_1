@@ -11,7 +11,7 @@ module top(
 
   //IDU
   wire [4:0] rs1, rs2, rd;
-  wire       rs1_en, rs2_en, rd_en;  //rd_en is we sig
+  wire       rd_en;
   wire [31:0] imm;
   wire [3:0] alu_op;
   wire       alu_src2_imm;
@@ -20,12 +20,16 @@ module top(
   wire [2:0] wb_sel;
   wire       npc_sel;    //是1就是jal触发
 
-  // 暂未使用的控制信号先接线网，避免端口方向/位宽错误
+  
   wire       mem_re;
   wire       mem_we;
   wire [1:0] mem_width;
-  wire       mem_unsigned;
-  wire [2:0] branch_type;
+
+  // 这些是 IDU 输出但当前顶层未使用的控制信号：
+  // 先显式接到 *_unused，避免读代码时误以为漏连
+  wire       idu_rs1_en_unused;
+  wire       idu_rs2_en_unused;
+  wire [2:0] idu_branch_type_unused;
 
 
 
@@ -43,6 +47,8 @@ module top(
 
   wire [31:0] wb_data;
 
+  // LSU 读数据，作为 WBU 的 MEM 写回输入
+  wire [31:0] rdata;
     
 
   IFU u_ifu(
@@ -59,8 +65,8 @@ module top(
  ,.rs1           (rs1)
  ,.rs2           (rs2)
  ,.rd            (rd)
- ,.rs1_en        (rs1_en)
- ,.rs2_en        (rs2_en)
+ ,.rs1_en        (idu_rs1_en_unused)
+ ,.rs2_en        (idu_rs2_en_unused)
  ,.rd_en         (rd_en)
  ,.imm           (imm)
  ,.alu_op        (alu_op)
@@ -72,8 +78,7 @@ module top(
  ,.mem_re        (mem_re)
  ,.mem_we        (mem_we)
  ,.mem_width     (mem_width)
- ,.mem_unsigned  (mem_unsigned)
- ,.branch_type   (branch_type)
+ ,.branch_type   (idu_branch_type_unused)
 
   );
 
@@ -128,14 +133,13 @@ module top(
   .wb_sel           (wb_sel)
  ,.pc4              (pc4)
  ,.alu_result       (alu_result)
- ,.mem_data         (32'h0)
+ ,.mem_data         (rdata)
  ,.imm              (imm)
  ,.wb_data          (wb_data)
  
   );
 
 
-wire [31:0] rdata; //临时用作LSU的读出值
 
   LSU u_lsu(
 
@@ -143,7 +147,6 @@ wire [31:0] rdata; //临时用作LSU的读出值
  ,.mem_re       (mem_re)
  ,.mem_we       (mem_we)
  ,.mem_width    (mem_width)
- ,.mem_unsigned (mem_unsigned)
  ,.wdata        (r_data2)
  ,.addr         (alu_result)
  ,.rdata        (rdata)

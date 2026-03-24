@@ -1,4 +1,5 @@
 `define REG_WIDTH 5
+`include "vsrc/ctrl_defs.vh"
 
 module EXU(
 
@@ -25,7 +26,16 @@ function [31:0] alu_func;
     input [31:0]    b;
     begin
         case(op)
-            4'b0000:    alu_func = a + b;
+            `ALU_ADD:   alu_func = a + b;
+            `ALU_SUB:   alu_func = a - b;
+            `ALU_AND:   alu_func = a & b;
+            `ALU_OR:    alu_func = a | b;
+            `ALU_XOR:   alu_func = a ^ b;
+            `ALU_SLT:   alu_func = ($signed(a) < $signed(b)) ? 32'd1 : 32'd0;
+            `ALU_SLTU:  alu_func = (a < b) ? 32'd1 : 32'd0;
+            `ALU_SLL:   alu_func = a << b[4:0];
+            `ALU_SRL:   alu_func = a >> b[4:0];
+            `ALU_SRA:   alu_func = $signed(a) >>> b[4:0];
             default:    alu_func = 32'b0;
         endcase
     end

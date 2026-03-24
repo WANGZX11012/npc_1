@@ -1,5 +1,7 @@
 `define I_LEN 32
 `define REG_WIDTH 5
+// 引入统一控制信号编码：mem_width / wb_sel
+`include "vsrc/ctrl_defs.vh"
 
 module IDU (
   input  [`I_LEN-1:0]       inst,
@@ -20,7 +22,6 @@ module IDU (
   output                    mem_re,
   output                    mem_we,
   output [1:0]              mem_width, //字节有1,2,4的选择                  
-  output                    mem_unsigned, //是否需要无符号扩展
 
   output [2:0]              wb_sel,
   output                    npc_sel,
@@ -45,6 +46,8 @@ localparam IMM_J = 3'b100;
   wire is_lui  = (opcode == 7'b0110111);
   wire is_sb   = (opcode == 7'b0100011) && (funct3 == 3'b000);
   wire is_sw   = (opcode == 7'b0100011) && (funct3 == 3'b010);
+  wire is_lbu  = (opcode == 7'b0000011) && (funct3 == 3'b100);
+  wire is_lw   = (opcode == 7'b0000011) && (funct3 == 3'b010);
 
 
   
@@ -52,32 +55,49 @@ localparam IMM_J = 3'b100;
   assign rs2 = inst[24:20];
   assign rd  = inst[11:7];
 
-  /*暂时与sb sw无关*/
-  assign rs1_en = is_addi | is_jalr | is_add;
-  assign rs2_en = is_add;
-  assign rd_en  = is_addi | is_jalr | is_add | is_lui;
+  // 寄存器读使能
+  // rs1: addi/add/jalr/lw/lbu/sw/sb 都需要
+  // rs2: add/sw/sb 需要
+  assign rs1_en = is_addi | is_jalr | is_add | is_lw | is_lbu | is_sw | is_sb;
+  assign rs2_en = is_add | is_sw | is_sb;
+  assign rd_en  = is_addi | is_jalr | is_add | is_lui | is_lbu | is_lw;//寄存器写使能逻辑
   
   /*alu related*/
-  assign alu_op = 4'b0000; //0是加法 现在固定
-  assign alu_src2_imm = is_addi | is_jalr | is_lui | is_sw | is_sb;  //add时为0， 为1时src2传入imm 而不是rs2的值 
-  assign alu_en = is_add | is_addi | is_jalr | is_sb | is_sw;
+  // 当前已实现的指令中，EXU 都使用加法语义：
+  // add/addi/jalr/lw/lbu/sw/sb -> 基址+偏移 或 普通加法
+  assign alu_op = `ALU_ADD;
+  assign alu_src2_imm = is_addi | is_jalr | is_lui | is_sw | is_sb | is_lw | is_lbu;  // add时为0， 为1时src2传入imm 而不是rs2的值
+  assign alu_en = is_add | is_addi | is_jalr | is_sb | is_sw | is_lw | is_lbu;
 
     // npc_sel:
   // 000 -> pc + 4  // 001 -> jalr目标地址
   
-  assign npc_sel = is_jalr ? 1 : 0;
+  assign npc_sel = is_jalr ? 1'b1 : 1'b0;
   // 访存相关
-  assign mem_re = 1'b0;
+  assign mem_re = is_lbu | is_lw;
   assign mem_we = is_sb | is_sw;
-  assign mem_width = is_sb ? 2'b00 : (is_sw ? 2'b10 : 2'b01);//0代表1字节 1代表二字节 2代表四字节
-  assign mem_unsigned = 1'b0;
-
+  // 访存宽度选择：sb/lbu=字节，sw/lw=字
+  // 其余默认 half（预留给后续 lh/lhu/sh）
+  assign mem_width = (is_sb | is_lbu) ? `MEM_BYTE :
+                     ((is_sw | is_lw) ? `MEM_WORD : `MEM_HALF);
   // wb_sel:
   // 000 -> ALU结果（addi）
   // 001 -> pc + 4   （jalr）
-  assign wb_sel = is_jalr ? 3'b001 : (is_lui ? 3'b011 : 3'b000);
+  // wb_sel mapping (explicit):
+  // 000 -> ALU result (addi / add)
+  // 001 -> pc + 4 (jalr)
+  // 010 -> mem_data (lw / lbu)
+  // 011 -> imm (lui)
+  // 写回来源选择：
+  // addi/add -> ALU，jalr -> pc+4，lw/lbu -> MEM，lui -> IMM
+  assign wb_sel = (is_addi | is_add) ? `WB_ALU :
+                  is_jalr            ? `WB_PC4 :
+                  (is_lw | is_lbu)   ? `WB_MEM :
+                  (is_lui ? `WB_IMM : `WB_ALU);
 
-    // 不支持分支
+  
+  
+  // 不支持分支
   assign branch_type = 3'b000;
 
   /*opcode 判断imm 类型*/
