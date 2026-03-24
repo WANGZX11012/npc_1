@@ -37,12 +37,16 @@ int main(int argc, char** argv) {
   top->eval();
   tfp->dump(sim_time++);
 
-  if (argc >= 2) {
-    if (!load_hex_program(argv[1])) {
+  if (argc >= 2) 
+  {
+    if (!load_hex_program(argv[1])) 
+    {
       printf("main: failed to load hex %s, exiting\n", argv[1]);
       return 1;
     }
-  } else {
+  } 
+  else 
+  {
     printf("main: no hex path provided, init pmem only\n");
 
     init_pmem(1024 * 1024);

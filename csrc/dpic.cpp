@@ -37,72 +37,87 @@ bool load_hex_program(const char *path)
   size_t max_idx = 0;
 
   // pass 1: compute max word index
-  while (fgets(line, sizeof(line), fp)) {
-    char *tok = strtok(line, " \t\r\n");
-    while (tok) {
-      if (tok[0] == '#') break;
-
+  while (fgets(line, sizeof(line), fp)) 
+  {
+    char *tok = strtok(line, " \t\r\n");  //用\t \r \n切割line里面的字符串
+    
+    while (tok) //内层循环
+    {
       size_t len = strlen(tok);
-      if (len > 0 && tok[len - 1] == ':') {
-        tok[len - 1] = '\0';
+      if (len > 0 && tok[len - 1] == ':') //说明是label token 例如0x224:  
+      {
+        tok[len - 1] = '\0';//冒号变成终止符
         cur = strtoul(tok, NULL, 16); // v3 words addressed
-      } else {
+      } 
+      else 
+      {
         char *end = NULL;
-        unsigned long v = strtoul(tok, &end, 16);
-        if (end != tok && *end == '\0') {
-          (void)v;
-          if (cur + 1 > max_idx) max_idx = cur + 1;
+        strtoul(tok, &end, 16);
+        if (end != tok && *end == '\0') 
+        {
+          if (cur + 1 > max_idx) max_idx = cur + 1; //max idx保存最大索引值
           cur++;
         }
       }
-
-      tok = strtok(NULL, " \t\r\n");
+      tok = strtok(NULL, " \t\r\n");//继续上一次解析 处理同一行（strtok 内部保存位置）
     }
   }
 
-  if (max_idx == 0) {
+  if (max_idx == 0) 
+  {
     fclose(fp);
     printf("load_hex: no valid instruction in %s\n", path);
     return false;
   }
 
-  if (max_idx > MAX_WORDS) {
+  if (max_idx > MAX_WORDS) 
+  {
     fclose(fp);
     printf("load_hex: program too large (%zu words), max %zu\n", max_idx, MAX_WORDS);
     return false;
   }
 
   dynamic_pc_inst_size = max_idx;
-  for (size_t i = 0; i < dynamic_pc_inst_size; i++) {
+  for (size_t i = 0; i < dynamic_pc_inst_size; i++) //把dynamic pc mem初始化为0
+  {
     dynamic_pc_inst[i] = 0;
   }
 
   pmem_words_size = MAX_WORDS;
-  for (size_t i = 0; i < pmem_words_size; i++) {
+  for (size_t i = 0; i < pmem_words_size; i++) //pmem 初始化
+  {
     pmem_words[i] = 0;
   }
 
-  // pass 2: load instructions/data
+  // pass 2: 把指令读进pmem 和pc mem 重置计数的
   rewind(fp);
   cur = 0;
   size_t loaded = 0;
 
-  while (fgets(line, sizeof(line), fp)) {
+  while (fgets(line, sizeof(line), fp)) 
+  {
     char *tok = strtok(line, " \t\r\n");
-    while (tok) {
+    while (tok) 
+    {
       if (tok[0] == '#') break;
 
       size_t len = strlen(tok);
-      if (len > 0 && tok[len - 1] == ':') {
+      if (len > 0 && tok[len - 1] == ':') 
+      {
         tok[len - 1] = '\0';
         cur = strtoul(tok, NULL, 16); // v3 words addressed
-      } else {
+      } 
+      else 
+      {
         char *end = NULL;
         unsigned long v = strtoul(tok, &end, 16);
-        if (end != tok && *end == '\0') {
-          if (cur < dynamic_pc_inst_size) {
+        if (end != tok && *end == '\0') 
+        {
+          if (cur < dynamic_pc_inst_size) 
+          {
             dynamic_pc_inst[cur] = (uint32_t)v;
-            if (cur < pmem_words_size) {
+            if (cur < pmem_words_size) 
+            {
               pmem_words[cur] = (uint32_t)v;
             }
             loaded++;
@@ -120,46 +135,56 @@ bool load_hex_program(const char *path)
   return true;
 }
 
-uint32_t pc_read(uint32_t addr) {
+uint32_t pc_read(uint32_t addr) 
+{
   uint32_t index = addr >> 2;
-  if (index < dynamic_pc_inst_size) {
+  if (index < dynamic_pc_inst_size) 
+  {
     return dynamic_pc_inst[index];
   }
-  if (index < sizeof(default_pc_inst) / sizeof(default_pc_inst[0])) {
+  if (index < sizeof(default_pc_inst) / sizeof(default_pc_inst[0])) 
+  {
     return default_pc_inst[index];
   }
   return 0;
 }
 
-extern "C" void npc_ebreak(int code) {
+extern "C" void npc_ebreak(int code) 
+{
   printf("DPI-C: ebreak at PC=0x%08x\n", code);
   fflush(stdout);
   exit(0);
 }
 
-void init_pmem(size_t bytes) {
-  size_t words = (bytes + 3) / 4;
+void init_pmem(size_t bytes) 
+{
+  size_t words = bytes; 
   if (words == 0) words = 1;
   if (words > MAX_WORDS) words = MAX_WORDS;
 
   pmem_words_size = words;
-  for (size_t i = 0; i < pmem_words_size; i++) {
+  for (size_t i = 0; i < pmem_words_size; i++) 
+  {
     pmem_words[i] = 0;
   }
 }
 
-extern "C" uint32_t pmem_read_u32(uint32_t raddr) {
+extern "C" uint32_t pmem_read_u32(uint32_t raddr) 
+{
   uint32_t index = raddr >> 2;
-  if (index >= pmem_words_size) {
+  if (index >= pmem_words_size) 
+  {
     printf("p read out range : 0x%08x\n", raddr);
     return 0;
   }
   return pmem_words[index];
 }
 
-extern "C" uint8_t pmem_read_u8(uint32_t raddr) {
+extern "C" uint8_t pmem_read_u8(uint32_t raddr) 
+{
   uint32_t index = raddr >> 2;
-  if (index >= pmem_words_size) {
+  if (index >= pmem_words_size) 
+  {
     printf("mem read out of range : 0x%08x\n", raddr);
     return 0;
   }
@@ -168,9 +193,11 @@ extern "C" uint8_t pmem_read_u8(uint32_t raddr) {
   return (word >> (byte_off * 8)) & 0xff;
 }
 
-extern "C" void pmem_write_u32(uint32_t waddr, uint32_t wdata) {
+extern "C" void pmem_write_u32(uint32_t waddr, uint32_t wdata) 
+{
   uint32_t index = waddr >> 2;
-  if (index >= pmem_words_size) {
+  if (index >= pmem_words_size) 
+  {
     printf("mem write out of range : 0x%08x\n", waddr);
     return;
   }
@@ -179,9 +206,11 @@ extern "C" void pmem_write_u32(uint32_t waddr, uint32_t wdata) {
   pmem_words[index] = wdata;
 }
 
-extern "C" void pmem_write_u8(uint32_t addr, uint8_t data) {
+extern "C" void pmem_write_u8(uint32_t addr, uint8_t data) 
+{
   uint32_t index = addr >> 2;
-  if (index >= pmem_words_size) {
+  if (index >= pmem_words_size) 
+  {
     fprintf(stderr, "pmem_write_u8 out of range addr=0x%08x\n", addr);
     return;
   }
