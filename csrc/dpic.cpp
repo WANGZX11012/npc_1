@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 
+static const uint32_t PC_BASE = 0x80000000u;
+
 static const size_t MAX_WORDS = 1024 * 1024 / 4; // 1MiB / 4 bytes
 static uint32_t pmem_words[MAX_WORDS];
 static size_t pmem_words_size = 0;
@@ -137,14 +139,19 @@ bool load_hex_program(const char *path)
   return true;
 }
 
-uint32_t pc_read(uint32_t addr) 
+uint32_t pc_read(uint32_t addr)
 {
-  uint32_t index = addr >> 2;
-  if (index < dynamic_pc_inst_size) 
+  uint32_t index;
+  if (addr >= PC_BASE) {
+    index = (addr - PC_BASE) >> 2;
+  } else {
+    index = addr >> 2;
+  }
+  if (index < dynamic_pc_inst_size)
   {
     return dynamic_pc_inst[index];
   }
-  if (index < sizeof(default_pc_inst) / sizeof(default_pc_inst[0])) 
+  if (index < sizeof(default_pc_inst) / sizeof(default_pc_inst[0]))
   {
     return default_pc_inst[index];
   }
@@ -154,8 +161,18 @@ uint32_t pc_read(uint32_t addr)
 extern "C" void npc_ebreak(int code) 
 {
   printf("DPI-C: ebreak at PC=0x%08x\n", code);
-  fflush(stdout);
-  exit(0);
+
+  if(code == 0)
+  {
+    printf("NPC: GOOD TRAP(exit code = 0)\n");
+    exit(0);
+  }
+  else
+  {
+    printf("NPC: BAD TRAP (exit code = %d)\n", code);
+    exit(1);
+  }
+
 }
 
 void init_pmem(size_t bytes) 
@@ -173,10 +190,18 @@ void init_pmem(size_t bytes)
 
 extern "C" uint32_t pmem_read_u32(uint32_t raddr) 
 {
-  uint32_t index = raddr >> 2;
-  if (index >= pmem_words_size) 
+  uint32_t index;
+  if (raddr >= PC_BASE) 
   {
-    printf("p read out range : 0x%08x\n", raddr);
+    index = (raddr - PC_BASE) >> 2;
+  } 
+  else 
+  {
+    index = raddr >> 2;
+  }
+  if (index >= pmem_words_size)
+  {
+    printf("pmem_read_u32 out of range : 0x%08x\n", raddr);
     return 0;
   }
   return pmem_words[index];
@@ -184,21 +209,40 @@ extern "C" uint32_t pmem_read_u32(uint32_t raddr)
 
 extern "C" uint8_t pmem_read_u8(uint32_t raddr) 
 {
-  uint32_t index = raddr >> 2;
-  if (index >= pmem_words_size) 
+  uint32_t index;
+  uint32_t byte_off;
+  if (raddr >= PC_BASE) 
   {
-    printf("mem read out of range : 0x%08x\n", raddr);
+    uint32_t off = raddr - PC_BASE;
+    index = off >> 2;
+    byte_off = off & 3u;
+  } 
+  else 
+  {
+    index = raddr >> 2;
+    byte_off = raddr & 3u;
+  }
+  if (index >= pmem_words_size)
+  {
+    printf("pmem read out of range : 0x%08x\n", raddr);
     return 0;
   }
   uint32_t word = pmem_words[index];
-  uint32_t byte_off = raddr & 3u;
   return (word >> (byte_off * 8)) & 0xff;
 }
 
 extern "C" void pmem_write_u32(uint32_t waddr, uint32_t wdata) 
 {
-  uint32_t index = waddr >> 2;
-  if (index >= pmem_words_size) 
+  uint32_t index;
+  if (waddr >= PC_BASE) 
+  {
+    index = (waddr - PC_BASE) >> 2;
+  } 
+  else 
+  {
+    index = waddr >> 2;
+  }
+  if (index >= pmem_words_size)
   {
     printf("mem write out of range : 0x%08x\n", waddr);
     return;
@@ -210,13 +254,24 @@ extern "C" void pmem_write_u32(uint32_t waddr, uint32_t wdata)
 
 extern "C" void pmem_write_u8(uint32_t addr, uint8_t data) 
 {
-  uint32_t index = addr >> 2;
-  if (index >= pmem_words_size) 
+  uint32_t index;
+  uint32_t byte_off;
+  if (addr >= PC_BASE) 
+  {
+    uint32_t off = addr - PC_BASE;
+    index = off >> 2;
+    byte_off = off & 3u;
+  } 
+  else 
+  {
+    index = addr >> 2;
+    byte_off = addr & 3u;
+  }
+  if (index >= pmem_words_size)
   {
     fprintf(stderr, "pmem_write_u8 out of range addr=0x%08x\n", addr);
     return;
   }
-  uint32_t byte_off = addr & 3u;
   uint32_t word = pmem_words[index];
   uint32_t mask = ~(0xffu << (byte_off * 8));
   pmem_words[index] = (word & mask) | ((uint32_t)data << (byte_off * 8));
