@@ -71,12 +71,20 @@ void npc_exec_once(void)
 
 void npc_cpu_exec(uint64_t n) 
 {
+  if (npc_state.state == NPC_ABORT || /*npc_state.state == NPC_END ||*/ npc_state.state == NPC_QUIT)
+  {
+    return;//直接退出
+  }
 
-  if (npc_state.state == NPC_END || npc_state.state == NPC_ABORT || npc_state.state == NPC_QUIT) 
+  if (npc_state.state == NPC_END) 
   {
     printf(ANSI_FMT("Press Q to quit\n", ANSI_FG_RED));
     return;
   }
+
+
+  
+
 
   if (n == (uint64_t)-1) 
   {

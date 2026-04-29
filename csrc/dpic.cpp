@@ -6,8 +6,9 @@
 
 static const uint32_t PC_BASE = 0x80000000u;
 
-static const size_t MAX_WORDS = 1024 * 1024 / 4; // 1MiB / 4 bytes
-static uint32_t pmem_words[MAX_WORDS];
+static const size_t MAX_WORDS = 1024 * 1024 / 4; // dynamic_pc_inst max (1MiB / 4 bytes)
+static const size_t PMEM_MAX_WORDS = (128 * 1024 * 1024) / 4; // pmem: 128MiB / 4 bytes (cover 0x8000_0000..0x87FF_FFFF)
+static uint32_t pmem_words[PMEM_MAX_WORDS];
 static size_t pmem_words_size = 0;
 
 static uint32_t dynamic_pc_inst[MAX_WORDS];
@@ -25,7 +26,7 @@ static const uint32_t default_pc_inst[] =
   0x00404283, // PC=0x0000001c: lw   x5,4(x0)   ; load from mem[4] -> x5 (low byte=5)
   0x024003e7, // PC=0x00000020: jalr x7,x0,0x24 ; x7 = pc+4, jump to 0x24
 
-  0x12345678,
+  // 0x12345678, //invalid test
 
   0x00100073,   //EBREAK
   0x00c00067, // PC=0x00000024: jalr x0,x0,0xc  ; jump to 0x0c (form loop)  EBREAK
@@ -91,7 +92,7 @@ extern "C" bool load_hex_program(const char *path)
     dynamic_pc_inst[i] = 0;
   }
 
-  pmem_words_size = MAX_WORDS;
+  pmem_words_size = dynamic_pc_inst_size;
   for (size_t i = 0; i < pmem_words_size; i++) //pmem 初始化
   {
     pmem_words[i] = 0;
@@ -113,7 +114,14 @@ extern "C" bool load_hex_program(const char *path)
       if (len > 0 && tok[len - 1] == ':') 
       {
         tok[len - 1] = '\0';
-        cur = strtoul(tok, NULL, 16); // v3 words addressed
+        unsigned long v = strtoul(tok, NULL, 16);
+        if (v >= PC_BASE) {
+          cur = (v - PC_BASE) >> 2;
+        } else if ((v & 3u) == 0 && v > MAX_WORDS) {
+          cur = v >> 2; // label was a byte address, normalize to word index
+        } else {
+          cur = v; // assume already a word index
+        }
       } 
       else 
       {
@@ -191,7 +199,7 @@ extern "C" void init_pmem(size_t bytes)
 {
   size_t words = bytes; 
   if (words == 0) words = 1;
-  if (words > MAX_WORDS) words = MAX_WORDS;
+  if (words > PMEM_MAX_WORDS) words = PMEM_MAX_WORDS;
 
   pmem_words_size = words;
   for (size_t i = 0; i < pmem_words_size; i++) 

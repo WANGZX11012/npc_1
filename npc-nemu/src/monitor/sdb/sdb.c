@@ -34,6 +34,11 @@ static char* rl_gets()
 
   line_read = readline("(npc-nemu) ");
 
+  if (line_read == NULL)
+  {
+    printf("[sdb] readline got EOF, leaving mainloop\n");
+  }
+
   if (line_read && *line_read) 
   {
     add_history(line_read);
@@ -150,7 +155,7 @@ static int cmd_si(char *args)
 
   npc_cpu_exec((uint64_t)num);
 
-  if (npc_state.state == NPC_ABORT || npc_state.state == NPC_END || npc_state.state == NPC_QUIT)
+  if (npc_state.state == NPC_ABORT || /*npc_state.state == NPC_END ||*/ npc_state.state == NPC_QUIT)
   {
     return -1;
   }
@@ -366,6 +371,7 @@ void npc_sdb_mainloop()
 {
   if (is_batch_mode) 
   { 
+    printf("[sdb] batch mode active, run cmd_c then exit mainloop\n");
     // 批处理模式：直接执行 'c' 命令
     cmd_c(NULL);// 无额外参数 直接执行
     return;
